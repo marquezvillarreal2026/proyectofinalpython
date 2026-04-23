@@ -1,2 +1,2 @@
 # proyectofinalpython
-💻 Si no funciona, haci lo dejo… si funciona, me alegro
+Este es el Proyecto Final de la Clase Submódulo 2 Codifica Software
