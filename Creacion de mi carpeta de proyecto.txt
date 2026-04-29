@@ -1,0 +1,11 @@
+*** Creacion de mi carpeta del proyecto***
+
+sugue los siguientes pasos para crear el proyecto final, no importa en que conpuitadora se encuentre 
+
+1.crea la carpeta ProyectoFinalMarquesyPeñaloza, en documentos va estar carpeta.
+
+2.Descarga de tu repositorio el proyectofinal.py y las imagenes creadas
+
+3.Realiza los cambios y las actividades de cada leccion
+
+4.sube tu repositorio el proyectofinal.py con los cambios realisados
