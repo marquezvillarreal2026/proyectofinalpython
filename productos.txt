@@ -1,0 +1,2 @@
+1|pantalon |200|ropa 
+2|camisa|100|ropa 
