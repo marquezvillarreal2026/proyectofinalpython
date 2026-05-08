@@ -1,2 +1,5 @@
 1|pantalon |200|ropa 
 2|camisa|100|ropa 
+3|tenis|500|ropa
+4|calsetines|50|ropa
+5|gorra|1500|ropa
