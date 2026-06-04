@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
+from datetime import datetime
 import os
 
 # -------------------------
@@ -13,7 +14,7 @@ ventana.configure(bg="black")
 ventana.resizable(False, False)
 
 # -------------------------
-# LOGO (AQUÍ VA BIEN COLOCADO)
+# LOGO
 # -------------------------
 try:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +38,7 @@ except:
     ).pack(pady=20)
 
 # -------------------------
-# REGISTRO PRODUCTOS
+# PRODUCTOS
 # -------------------------
 def abrir_registro_productos():
     reg = tk.Toplevel()
@@ -74,7 +75,7 @@ def abrir_registro_productos():
         with open(path, "a", encoding="utf-8") as f:
             f.write(f"{idp.get()}|{desc.get()}|{precio.get()}|{cat.get()}\n")
 
-        messagebox.showinfo("OK", "Guardado")
+        messagebox.showinfo("OK", "Producto guardado")
 
         idp.delete(0, tk.END)
         desc.delete(0, tk.END)
@@ -94,7 +95,7 @@ def abrir_registro_productos():
     ).pack(pady=20)
 
 # -------------------------
-# REGISTRO VENTAS
+# VENTAS + TICKET
 # -------------------------
 def abrir_registro_ventas():
     ven = tk.Toplevel()
@@ -131,9 +132,11 @@ def abrir_registro_ventas():
     lbl("Total").pack()
     txt_t = tk.Entry(ven, state="readonly"); txt_t.pack()
 
+    # CALCULAR
     def calc(*a):
         try:
             total = float(txt_p.get()) * int(txt_c.get())
+
             txt_t.config(state="normal")
             txt_t.delete(0, tk.END)
             txt_t.insert(0, str(total))
@@ -141,24 +144,77 @@ def abrir_registro_ventas():
         except:
             pass
 
+    # SELECCIÓN
     def sel(event):
         prod = cb.get()
+
         txt_p.config(state="normal")
         txt_p.delete(0, tk.END)
-        txt_p.insert(0, productos.get(prod, 0))
+        txt_p.insert(0, str(productos.get(prod, 0)))
         txt_p.config(state="readonly")
+
         calc()
 
+    # TICKET
+    def mostrar_ticket(producto, precio, cantidad, total):
+        ticket = tk.Toplevel()
+        ticket.title("Ticket")
+        ticket.geometry("300x350")
+        ticket.configure(bg="black")
+
+        fecha = datetime.now().strftime("%d/%m/%Y %I:%M:%S %p")
+
+        texto = (
+            " *** PUNTO DE VENTA ***\n"
+            "--------------------------\n"
+            f"Fecha: {fecha}\n"
+            "--------------------------\n"
+            f"Producto: {producto}\n"
+            f"Precio: ${precio}\n"
+            f"Cantidad: {cantidad}\n"
+            "--------------------------\n"
+            f"TOTAL: ${total}\n"
+            "--------------------------\n"
+            " ¡GRACIAS POR SU COMPRA!"
+        )
+
+        tk.Label(
+            ticket,
+            text=texto,
+            font=("Consolas", 11),
+            bg="black",
+            fg="white",
+            justify="left"
+        ).pack(pady=15)
+
+        tk.Button(
+            ticket,
+            text="Cerrar",
+            command=ticket.destroy,
+            bg="#39FF14",
+            fg="black",
+            font=("Arial", 10, "bold"),
+            bd=0
+        ).pack(pady=10)
+
+    # GUARDAR VENTA
     def guardar():
         if not cb.get() or not txt_p.get() or not txt_c.get():
             messagebox.showwarning("Error", "Completa todo")
             return
 
+        prod = cb.get()
+        precio = txt_p.get()
+        cant = txt_c.get()
+        total = txt_t.get()
+
         path = os.path.join(os.path.dirname(__file__), "ventas.txt")
         with open(path, "a", encoding="utf-8") as f:
-            f.write(f"{cb.get()}|{txt_p.get()}|{txt_c.get()}|{txt_t.get()}\n")
+            f.write(f"{prod}|{precio}|{cant}|{total}\n")
 
-        messagebox.showinfo("OK", "Venta guardada")
+        messagebox.showinfo("Venta Registrada", "La venta se registró correctamente.")
+
+        mostrar_ticket(prod, precio, cant, total)
 
         cb.set("")
         txt_p.config(state="normal"); txt_p.delete(0, tk.END); txt_p.config(state="readonly")
@@ -181,13 +237,70 @@ def abrir_registro_ventas():
     ).pack(pady=20)
 
 # -------------------------
+# REPORTES
+# -------------------------
+def abrir_reportes():
+    ventana_r = tk.Toplevel()
+    ventana_r.title("Reporte de Ventas")
+    ventana_r.geometry("700x450")
+    ventana_r.configure(bg="black")
+
+    tk.Label(
+        ventana_r,
+        text="REPORTE DE VENTAS",
+        font=("Arial", 16, "bold"),
+        bg="black",
+        fg="#39FF14"
+    ).pack(pady=10)
+
+    frame = tk.Frame(ventana_r, bg="black")
+    frame.pack()
+
+    columnas = ("producto", "precio", "cantidad", "total")
+
+    tabla = ttk.Treeview(frame, columns=columnas, show="headings", height=15)
+
+    tabla.heading("producto", text="Producto")
+    tabla.heading("precio", text="Precio")
+    tabla.heading("cantidad", text="Cantidad")
+    tabla.heading("total", text="Total")
+
+    tabla.column("producto", width=250, anchor="center")
+    tabla.column("precio", width=100, anchor="center")
+    tabla.column("cantidad", width=100, anchor="center")
+    tabla.column("total", width=120, anchor="center")
+
+    tabla.pack()
+
+    try:
+        path = os.path.join(os.path.dirname(__file__), "ventas.txt")
+        with open(path, "r", encoding="utf-8") as f:
+            for l in f:
+                if l.strip():
+                    tabla.insert("", tk.END, values=l.strip().split("|"))
+    except:
+        messagebox.showerror("Error", "No hay ventas")
+
+    tk.Button(
+        ventana_r,
+        text="Cerrar",
+        command=ventana_r.destroy,
+        bg="#39FF14",
+        fg="black",
+        font=("Arial", 12, "bold"),
+        width=15,
+        height=2,
+        bd=0
+    ).pack(pady=10)
+
+# -------------------------
 # BOTONES PRINCIPALES
 # -------------------------
-def boton(texto, cmd):
+def boton(t, c):
     return tk.Button(
         ventana,
-        text=texto,
-        command=cmd,
+        text=t,
+        command=c,
         bg="#39FF14",
         fg="black",
         font=("Arial", 12, "bold"),
@@ -198,7 +311,7 @@ def boton(texto, cmd):
 
 boton("Registro de Productos", abrir_registro_productos).pack(pady=10)
 boton("Registro de Ventas", abrir_registro_ventas).pack(pady=10)
-boton("Reportes", lambda: messagebox.showinfo("Info", "En construcción")).pack(pady=10)
+boton("Reportes", abrir_reportes).pack(pady=10)
 boton("Acerca de", lambda: messagebox.showinfo("Info", "Punto de Venta de Ropa\nProyecto Escolar\nVersión 1.0")).pack(pady=10)
 
 ventana.mainloop()
